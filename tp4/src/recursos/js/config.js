@@ -1,0 +1,1 @@
+export const url_prodcutos = "./recursos/datos/productos.json";
