@@ -10,6 +10,7 @@ import { calcularEnvio } from './envio.js';
 import { construirPedido, validarCliente } from './pedido.js';
 import { enviarEmail } from './email.js';
 import { validarConsulta, construirParametrosConsulta } from './contacto.js';
+import { REGEX_EMAIL } from './utilidades.js';
 
 //  Referencias DOM de las vistas
 const contenedorProductos = document.getElementById("contenedor-productos");
@@ -19,6 +20,7 @@ const contenedorDetalle = document.getElementById('contenedor-detalle');
 const contenedorOfertas = document.getElementById('contenedor-ofertas');
 const contenedorCarrito = document.getElementById('lista-carrito');
 const formContacto = document.getElementById('form-contacto');
+const formLogin = document.getElementById('form-login');
 
 //  Carga de datos (con manejo de errores)
 let productos = null;
@@ -264,5 +266,30 @@ if (formContacto) {
             botonEnviarConsulta.disabled = false;
             botonEnviarConsulta.textContent = "Enviar";
         }
+    });
+}
+
+
+// --- Vista de login (login.html) ---
+// Simulado: no hay backend, así que solo validamos y mostramos el mensaje de éxito
+if (formLogin) {
+    formLogin.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const email = formLogin.elements["email_usuario"].value.trim();
+        const contrasenia = formLogin.elements["contraseña_usuario"].value;
+
+        // Validación con JS (además del required, type="email" y minlength del HTML)
+        if (!REGEX_EMAIL.test(email)) {
+            mostrarNotificacion("Ingresá un email válido.", "error");
+            return;
+        }
+        if (contrasenia.length < 6) {
+            mostrarNotificacion("La contraseña debe tener al menos 6 caracteres.", "error");
+            return;
+        }
+
+        mostrarNotificacion("¡Inicio de sesión exitoso! Bienvenido a Apex Fit.");
+        formLogin.reset();
     });
 }

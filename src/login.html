@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Apex Fit - Login</title>
         <link rel="stylesheet" href="./recursos/estilos/base.css">
+        <script type="module" src="./recursos/js/index.js"></script>
     </head>
 
     <body>
@@ -50,7 +51,7 @@
             <section class = "seccion-contacto">
                 <div class = "contenedor-formulario">
                     <h1>Iniciar Sesión</h1>
-                    <form class = "formulario-contacto" action="./login.html" method="post">
+                    <form id="form-login" class="formulario-contacto">
                         <div class="campo-form campo-completo">
                             <label for="id_email">Correo electrónico:</label>
                             <input 
@@ -58,6 +59,7 @@
                             id="id_email" 
                             name="email_usuario" 
                             placeholder="tu-email@ejemplo.com" 
+                            autocomplete="email"
                             required
                             >
                         </div>
@@ -66,7 +68,9 @@
                             <input 
                             type="password" 
                             id="id_contraseña" 
-                            name="contraseña_usuario" 
+                            name="contraseña_usuario"
+                            minlength="6"
+                            autocomplete="current-password" 
                             required
                             >
                         </div>
