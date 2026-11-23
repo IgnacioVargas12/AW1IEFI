@@ -2,8 +2,10 @@
 import { URL_PRODUCTOS } from './config.js';
 import { obtenerDatos } from './datos.js';
 import { filtrarPorCategoria, ordenarProductos, obtenerProductoPorId } from './productos.js';
-import { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion} from './render.js';
-import { agregarAlCarrito, CANTIDAD_MAXIMA } from './carrito.js';
+import { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion, renderizarCarrito, renderizarResumen} from './render.js';
+import { agregarAlCarrito, CANTIDAD_MAXIMA,  actualizarCantidad, quitarDelCarrito, obtenerCarrito, detallarCarrito,
+         calcularSubtotal, obtenerEnvio, guardarEnvio } from './carrito.js';
+import { calcularEnvio } from './envio.js';
 
 //  Referencias DOM de las tres vistas
 const contenedorProductos = document.getElementById("contenedor-productos");
@@ -11,6 +13,7 @@ const botonesCategorias = document.querySelectorAll(".boton-categoria");
 const selectOrdenar = document.getElementById("id-ordenar");
 const contenedorDetalle = document.getElementById('contenedor-detalle');
 const contenedorOfertas = document.getElementById('contenedor-ofertas');
+const contenedorCarrito = document.getElementById('lista-carrito');
 
 //  Carga de datos (con manejo de errores)
 let productos = null;
@@ -21,7 +24,7 @@ try {
     console.error("No se pudieron cargar los productos:", error);
 
     // Mostramos el error en el contenedor de la página que estemos viendo
-    [contenedorProductos, contenedorDetalle, contenedorOfertas]
+    [contenedorProductos, contenedorDetalle, contenedorOfertas, contenedorCarrito]
         .filter(Boolean)
         .forEach(contenedor =>
             renderizarError(contenedor, "No pudimos cargar los productos. Intentá de nuevo más tarde.")
@@ -84,6 +87,80 @@ if (productos) {
     // --- Vista de ofertas (ofertas.html) ---
     if (contenedorOfertas) {
         renderizarOfertas(contenedorOfertas, productos);
+    }
+
+    // --- Vista de carrito (carrito.html) ---
+    if (contenedorCarrito) {
+        const formEnvio = document.getElementById("form-envio");
+
+        // Redibuja lista y resumen desde localStorage
+        const refrescarCarrito = () => {
+            const items = detallarCarrito(obtenerCarrito(), productos);
+            const envio = obtenerEnvio();
+
+            renderizarCarrito(contenedorCarrito, items);
+            renderizarResumen(calcularSubtotal(items), envio ? envio.costo : null);
+        };
+
+        // Restauramos la provincia elegida antes (si hay)
+        const envioGuardado = obtenerEnvio();
+        if (envioGuardado) {
+            formEnvio.elements["provincia"].value = envioGuardado.provincia;
+        }
+
+        refrescarCarrito();
+
+        // Delegación de eventos: un solo listener sobre el contenedor,
+        // porque los botones se vuelven a crear en cada render
+        contenedorCarrito.addEventListener("click", (e) => {
+            const boton = e.target.closest("[data-accion='quitar']");
+            if (!boton) return;
+
+            quitarDelCarrito(parseInt(boton.dataset.id));
+            mostrarNotificacion("Producto quitado del carrito.");
+            refrescarCarrito();
+        });
+
+        contenedorCarrito.addEventListener("change", (e) => {
+            const input = e.target.closest("[data-accion='cantidad']");
+            if (!input) return;
+
+            const cantidad = parseInt(input.value);
+
+            if (!Number.isInteger(cantidad) || cantidad < 1 || cantidad > CANTIDAD_MAXIMA) {
+                mostrarNotificacion(`La cantidad debe estar entre 1 y ${CANTIDAD_MAXIMA}.`, "error");
+                refrescarCarrito(); // vuelve al valor guardado
+                return;
+            }
+
+            actualizarCantidad(parseInt(input.dataset.id), cantidad);
+            refrescarCarrito();
+        });
+
+        // Cálculo de envío
+        formEnvio.addEventListener("submit", (e) => {
+            e.preventDefault();
+
+            const provincia = formEnvio.elements["provincia"].value;
+            const codigoPostal = formEnvio.elements["codigo-postal"].value.trim();
+
+            // Validación con JS (además del required y el pattern del HTML)
+            if (codigoPostal !== "" && !/^(\d{4}|[A-Za-z]\d{4}[A-Za-z]{3})$/.test(codigoPostal)) {
+                mostrarNotificacion("El código postal no es válido.", "error");
+                return;
+            }
+
+            const costo = calcularEnvio(provincia);
+
+            if (costo === null) {
+                mostrarNotificacion("Elegí una provincia válida.", "error");
+                return;
+            }
+
+            guardarEnvio({ provincia, costo });
+            refrescarCarrito();
+            mostrarNotificacion(costo === 0 ? "¡Envío gratis a Córdoba!" : "Envío calculado.");
+        });
     }
 }   
 

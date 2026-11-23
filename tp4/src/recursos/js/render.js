@@ -1,4 +1,6 @@
 import { calcularPrecioFinal } from './productos.js';
+import { CANTIDAD_MAXIMA } from './carrito.js';
+
 //Función que renderiza todos los productos (catalogo.html)
 const renderizarProductos = (contenedor, arregloProductos) => {
     let productosHTML = '';
@@ -183,4 +185,54 @@ const renderizarError = (contenedor, mensaje) => {
     contenedor.innerHTML = `<p class="mensaje-error">${mensaje}</p>`;
 };
 
-export { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion };
+const formatearPrecio = (valor) => `$${valor.toLocaleString("es-AR")}`;
+
+// Dibuja los productos del carrito (items = [{ producto, cantidad }])
+const renderizarCarrito = (contenedor, items) => {
+    if (items.length === 0) {
+        contenedor.innerHTML = `
+            <p>Tu carrito está vacío.</p>
+            <a href="./catalogo.html" class="boton-principal">Ir al catálogo</a>
+        `;
+        return;
+    }
+
+    contenedor.innerHTML = items.map(({ producto, cantidad }) => `
+        <article class="producto-carrito">
+            <img src="${producto.imagen}" alt="${producto.nombre}" width="100">
+            <div class="info-producto-carrito">
+                <h3>${producto.nombre}</h3>
+                <p>${producto.descripcion}</p>
+                <p><strong>${formatearPrecio(calcularPrecioFinal(producto))}</strong> c/u</p>
+            </div>
+            <div class="cantidad-carrito">
+                <div class="campo-form">
+                    <label for="cantidad-${producto.id}">Cantidad</label>
+                    <input type="number" id="cantidad-${producto.id}" min="1" max="${CANTIDAD_MAXIMA}"
+                           value="${cantidad}" required data-accion="cantidad" data-id="${producto.id}">
+                </div>
+                <button type="button" class="boton-secundario" data-accion="quitar" data-id="${producto.id}"
+                        aria-label="Quitar ${producto.nombre} del carrito">
+                    Quitar
+                </button>
+            </div>
+        </article>
+    `).join("");
+};
+
+// costoEnvio: null = sin calcular, 0 = gratis, número = costo
+const renderizarResumen = (subtotal, costoEnvio) => {
+    document.getElementById("resumen-subtotal").textContent = formatearPrecio(subtotal);
+
+    let textoEnvio = "A calcular";
+    if (costoEnvio === 0) {
+        textoEnvio = "Gratis";
+    } else if (costoEnvio !== null) {
+        textoEnvio = formatearPrecio(costoEnvio);
+    }
+    document.getElementById("resumen-envio").textContent = textoEnvio;
+
+    document.getElementById("resumen-total").textContent = formatearPrecio(subtotal + (costoEnvio ?? 0));
+};
+
+export { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion, renderizarCarrito, renderizarResumen };
