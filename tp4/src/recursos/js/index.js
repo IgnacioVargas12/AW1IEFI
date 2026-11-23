@@ -2,10 +2,13 @@
 import { URL_PRODUCTOS } from './config.js';
 import { obtenerDatos } from './datos.js';
 import { filtrarPorCategoria, ordenarProductos, obtenerProductoPorId } from './productos.js';
-import { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion, renderizarCarrito, renderizarResumen} from './render.js';
+import { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError,
+     mostrarNotificacion, renderizarCarrito, renderizarResumen, renderizarConfirmacion} from './render.js';
 import { agregarAlCarrito, CANTIDAD_MAXIMA,  actualizarCantidad, quitarDelCarrito, obtenerCarrito, detallarCarrito,
-         calcularSubtotal, obtenerEnvio, guardarEnvio } from './carrito.js';
+         calcularSubtotal, obtenerEnvio, guardarEnvio, vaciarCarrito } from './carrito.js';
 import { calcularEnvio } from './envio.js';
+import { construirPedido, validarCliente } from './pedido.js';
+import { enviarEmail } from './email.js';
 
 //  Referencias DOM de las tres vistas
 const contenedorProductos = document.getElementById("contenedor-productos");
@@ -161,6 +164,62 @@ if (productos) {
             refrescarCarrito();
             mostrarNotificacion(costo === 0 ? "¡Envío gratis a Córdoba!" : "Envío calculado.");
         });
+
+        // Finalizar compra
+        const formPedido = document.getElementById("form-pedido");
+        const botonFinalizar = document.getElementById("boton-finalizar");
+        const seccionCarrito = document.querySelector(".seccion-carrito");
+
+        formPedido.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const items = detallarCarrito(obtenerCarrito(), productos);
+            const envio = obtenerEnvio();
+
+            if (items.length === 0) {
+                mostrarNotificacion("Tu carrito está vacío.", "error");
+                return;
+            }
+            if (!envio) {
+                mostrarNotificacion("Calculá el envío antes de finalizar la compra.", "error");
+                return;
+            }
+
+            const cliente = {
+                nombre: formPedido.elements["nombre"].value.trim(),
+                email: formPedido.elements["email"].value.trim(),
+                nota: formPedido.elements["nota"].value.trim()
+            };
+
+            const errores = validarCliente(cliente);
+            if (errores.length > 0) {
+                mostrarNotificacion(errores[0], "error");
+                return;
+            }
+
+            // Nombre legible de la provincia (en el storage solo guardamos el valor, ej: "cordoba")
+            const opcion = formEnvio.querySelector(`option[value="${envio.provincia}"]`);
+            const nombreProvincia = opcion ? opcion.textContent : envio.provincia;
+
+            const pedido = construirPedido(items, envio.costo, nombreProvincia, cliente);
+
+            // Evitamos envíos dobles mientras se espera la respuesta
+            botonFinalizar.disabled = true;
+            botonFinalizar.textContent = "Enviando pedido...";
+
+            try {
+                await enviarEmail(pedido.parametrosEmail);
+                vaciarCarrito();
+                renderizarConfirmacion(seccionCarrito, pedido);
+                mostrarNotificacion("¡Pedido enviado con éxito!");
+            } catch (error) {
+                console.error("No se pudo enviar el pedido:", error);
+                mostrarNotificacion("No pudimos enviar el pedido. Intentá de nuevo en unos minutos.", "error");
+                botonFinalizar.disabled = false;
+                botonFinalizar.textContent = "Finalizar compra";
+            }
+        });
+
     }
 }   
 

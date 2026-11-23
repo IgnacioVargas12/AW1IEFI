@@ -112,13 +112,21 @@
                     <p><strong>Total:</strong></p>
                     <p><strong id="resumen-total">$0</strong></p>
                 </div>
-                <form action="#" method="post">
+                <form id="form-pedido">
                     <div class="campo-form">
-                        <label for="id-nota">Nota del pedido</label>
-                        <textarea name="nota" id="id-nota" rows="5"></textarea>
+                        <label for="id-nombre">Nombre y apellido</label>
+                        <input type="text" id="id-nombre" name="nombre" required minlength="3" maxlength="60" autocomplete="name">
+                    </div>
+                    <div class="campo-form">
+                        <label for="id-email">Email</label>
+                        <input type="email" id="id-email" name="email" required autocomplete="email" placeholder="tuemail@ejemplo.com">
+                    </div>
+                    <div class="campo-form">
+                        <label for="id-nota">Nota del pedido (opcional)</label>
+                        <textarea name="nota" id="id-nota" rows="5" maxlength="300"></textarea>
                     </div>
                     <div class="acciones-form">
-                        <button type="submit" class="boton-principal">Finalizar compra</button>
+                        <button type="submit" id="boton-finalizar" class="boton-principal">Finalizar compra</button>
                     </div>
                 </form>
             </aside>

@@ -98,3 +98,13 @@ export const obtenerEnvio = () => {
         return null;
     }
 };
+
+// Se usa después de una compra exitosa
+export const vaciarCarrito = () => {
+    guardarCarrito([]);
+    try {
+        localStorage.removeItem(CLAVE_ENVIO);
+    } catch (error) {
+        console.error("No se pudo borrar el envío:", error);
+    }
+};

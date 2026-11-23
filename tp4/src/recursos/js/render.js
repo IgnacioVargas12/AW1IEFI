@@ -1,5 +1,6 @@
 import { calcularPrecioFinal } from './productos.js';
 import { CANTIDAD_MAXIMA } from './carrito.js';
+import { formatearPrecio, escaparHTML } from './utilidades.js';
 
 //Función que renderiza todos los productos (catalogo.html)
 const renderizarProductos = (contenedor, arregloProductos) => {
@@ -185,7 +186,6 @@ const renderizarError = (contenedor, mensaje) => {
     contenedor.innerHTML = `<p class="mensaje-error">${mensaje}</p>`;
 };
 
-const formatearPrecio = (valor) => `$${valor.toLocaleString("es-AR")}`;
 
 // Dibuja los productos del carrito (items = [{ producto, cantidad }])
 const renderizarCarrito = (contenedor, items) => {
@@ -235,4 +235,18 @@ const renderizarResumen = (subtotal, costoEnvio) => {
     document.getElementById("resumen-total").textContent = formatearPrecio(subtotal + (costoEnvio ?? 0));
 };
 
-export { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion, renderizarCarrito, renderizarResumen };
+// Pantalla de éxito: reemplaza el contenido del carrito
+const renderizarConfirmacion = (contenedor, { numero, nombre, email, total }) => {
+    contenedor.innerHTML = `
+        <h1>¡Gracias por tu compra, ${escaparHTML(nombre)}!</h1>
+        <section class="contenedor-formulario">
+            <p>Tu pedido <strong>${numero}</strong> fue registrado por un total de
+               <strong>${formatearPrecio(total)}</strong>.</p>
+            <p>Te enviamos un email de confirmación a <strong>${escaparHTML(email)}</strong>.</p>
+            <a href="./catalogo.html" class="boton-principal">Seguir comprando</a>
+        </section>
+    `;
+};
+
+export { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, 
+    mostrarNotificacion, renderizarCarrito, renderizarResumen, renderizarConfirmacion };
