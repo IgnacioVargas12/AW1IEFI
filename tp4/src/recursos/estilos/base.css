@@ -489,6 +489,10 @@ select {
     font-size: 1.2rem;
 }
 
+.campo-form{
+    margin-bottom: 1rem;
+}
+
 /* Espacio entre nota y botón */
 .resumen-carrito .acciones-form {
     margin-top: 1rem;
