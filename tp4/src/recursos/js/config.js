@@ -1,1 +1,1 @@
-export const url_prodcutos = "./recursos/datos/productos.json";
+export const URL_PRODUCTOS = "./recursos/datos/productos.json";

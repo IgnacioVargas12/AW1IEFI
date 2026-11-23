@@ -151,6 +151,20 @@ select {
     /* destaca el boton elegido */
 }
 
+/* Estilo para notificaciones */
+.notificacion {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: 6px;
+    color: #fff;
+    z-index: 1000;
+}
+.notificacion-exito { background: #2e7d32; }
+.notificacion-error { background: #c62828; }
+.notificacion.oculta { display: none; }
+
 /* Estilo para Mobile */
 /* Estilo para encabezado */
 .contenido-encabezado{

@@ -1,5 +1,4 @@
-import { productos } from './productos.js';
-
+import { calcularPrecioFinal } from './productos.js';
 //Función que renderiza todos los productos (catalogo.html)
 const renderizarProductos = (contenedor, arregloProductos) => {
     let productosHTML = '';
@@ -14,8 +13,8 @@ const renderizarProductos = (contenedor, arregloProductos) => {
                     </figure>
                     <h3>${producto.nombre}</h3>
                     <p>${producto.descripcion}</p>
-                    <p><strong>$${producto.precioFinal.toLocaleString()}</strong></p>
-                    <a href="./detalle_producto.html?id=${producto.id}" class="boton-principal">Ver detalle</a>
+                    <p><strong>$${calcularPrecioFinal(producto).toLocaleString("es-AR")}</strong></p>
+                    <a href="./detalle_producto.html?id=${producto.id}" class="boton-principal">Ver producto</a>
                 </article>
         `;
     });
@@ -24,36 +23,6 @@ const renderizarProductos = (contenedor, arregloProductos) => {
     return productosHTML;
 };
 
-//Función de filtrado por categoría
-const filtrarPorCategoria = (categoriaSeleccionada) => {
-    if (categoriaSeleccionada === "Todas") {
-        return productos.filter(prod => prod.categoria !== "Ofertas"); // Devuelve todos excepto los de la categoría "Ofertas"
-    }
-    // Filtra el array original según la categoría
-    return productos.filter(prod => prod.categoria === categoriaSeleccionada);
-};
-
-//Función de ordenamiento
-const ordenarProductos = (criterio, arregloA1Ordenar) => {
-    // Hacemos una copia del array para no modificar el original
-    const arregloCopia = [...arregloA1Ordenar];
-
-    if (criterio === "precio-bajo") {
-        return arregloCopia.sort((a, b) => a.precio - b.precio);
-    } else if (criterio === "precio-alto") {
-        return arregloCopia.sort((a, b) => b.precio - a.precio);
-    } else if (criterio === "nombre") {
-        return arregloCopia.sort((a, b) => a.nombre.localeCompare(b.nombre));
-    }
-    
-    return arregloCopia; // Si es "relevancia" u otro, devuelve el orden por defecto
-};
-
-//  Funciones para cargar el detalle del producto (detalle_producto.html)
-// Función para buscar un producto por ID
-const obtenerProductoPorId = (id, arregloProductos) => {
-    return arregloProductos.find(producto => producto.id === id);
-};
 
 // Función para renderizar todo el detalle usando template literals
 const renderizarDetalle = (contenedor, producto) => {
@@ -83,10 +52,10 @@ const renderizarDetalle = (contenedor, producto) => {
             <div>
                 <h2>${producto.nombre}</h2>
                 <p><strong>Marca:</strong> ${producto.marca}</p>
-                <p><strong>$${producto.precioFinal.toLocaleString()}</strong> ${producto.cuotas}</p>
+                <p><strong>$${calcularPrecioFinal(producto).toLocaleString("es-AR")}</strong> ${producto.cuotas}</p>
                 <p>${producto.descripcion}</p>
                 <p><strong>Sabor:</strong> ${producto.sabor}</p>
-                <form action="./carrito.html" method="post">
+                <form id="form-agregar-carrito">
                     <div>
                         <label for="id-cantidad"><strong>Cantidad:</strong></label>
                         <input type="number" id="id-cantidad" name="cantidad" min="1" value="1" max="10" required>
@@ -145,11 +114,11 @@ const renderizarOfertas = (contenedor, arregloProductos) => {
                     <div class="oferta-contenido">
                         <h3>${comboImperdible.nombre}</h3>
                         <div class="oferta-precio-fila">
-                            <span class="etiqueta-descuento">${comboImperdible.descuento * 100}% OFF</span>
-                            <span class="precio-final">$${comboImperdible.precioFinal.toLocaleString()}</span>
+                            <span class="etiqueta-descuento">${Math.round(comboImperdible.descuento * 100)}% OFF</span>
+                            <span class="precio-final">$${calcularPrecioFinal(comboImperdible).toLocaleString("es-AR")}</span>
                         </div>
                         <p>${comboImperdible.descripcion}</p>
-                        <a href="./carrito.html" class="boton-principal">Agregar al carrito</a>
+                        <a href="./detalle_producto.html?id=${comboImperdible.id}" class="boton-principal">Ver producto</a>
                     </div>
                 </article>
             </section>
@@ -171,11 +140,11 @@ const renderizarOfertas = (contenedor, arregloProductos) => {
                     <div class="oferta-contenido">
                         <h3>${producto.nombre}</h3>
                         <div class="oferta-precio-fila">
-                            <span class="etiqueta-descuento">${producto.descuento * 100}% OFF</span>
-                            <span class="precio-final">$${producto.precioFinal.toLocaleString()}</span>
+                            <span class="etiqueta-descuento">${Math.round(producto.descuento * 100)}% OFF</span>
+                            <span class="precio-final">$${calcularPrecioFinal(producto).toLocaleString("es-AR")}</span>
                         </div>
                         <p>${producto.descripcion}</p>
-                        <a href="./carrito.html" class="boton-principal">Agregar al carrito</a>
+                        <a href="./detalle_producto.html?id=${producto.id}" class="boton-principal">Ver producto</a>
                     </div>
                 </article>
             `;
@@ -187,4 +156,31 @@ const renderizarOfertas = (contenedor, arregloProductos) => {
     // Cargamos todo en el contenedor general
     contenedor.innerHTML = htmlOfertas;
 };
-export {renderizarProductos, filtrarPorCategoria, ordenarProductos, obtenerProductoPorId, renderizarDetalle, renderizarOfertas};
+
+// Función para mostrar notificaciones temporales en la página
+const mostrarNotificacion = (mensaje, tipo = "exito") => {
+    let notificacion = document.getElementById("notificacion");
+
+    if (!notificacion) {
+        notificacion = document.createElement("div");
+        notificacion.id = "notificacion";
+        notificacion.setAttribute("role", "status");
+        notificacion.setAttribute("aria-live", "polite");
+        document.body.append(notificacion);
+    }
+
+    notificacion.textContent = mensaje;
+    notificacion.className = `notificacion notificacion-${tipo}`;
+
+    clearTimeout(notificacion.temporizador);
+    notificacion.temporizador = setTimeout(() => {
+        notificacion.classList.add("oculta");
+    }, 3000);
+};
+
+// Función para renderizar un mensaje de error en cualquier contenedor
+const renderizarError = (contenedor, mensaje) => {
+    contenedor.innerHTML = `<p class="mensaje-error">${mensaje}</p>`;
+};
+
+export { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError, mostrarNotificacion };
