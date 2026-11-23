@@ -7,3 +7,8 @@ export const escaparHTML = (texto) => {
 };
 
 export const urlAbsoluta = (ruta) => new URL(ruta, window.location.href).href;
+
+//Validaciones de datos de contacto y carrito
+export const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const REGEX_NOMBRE = /^[\p{L}' ]{2,60}$/u;
+export const REGEX_TELEFONO = /^\+?[0-9 -]{8,18}$/;

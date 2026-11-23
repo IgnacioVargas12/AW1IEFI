@@ -5,6 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Apex Fit - Contacto</title>
         <link rel="stylesheet" href="./recursos/estilos/base.css">
+        <script type="module" src="./recursos/js/index.js"></script>
     </head>
 
     <body>
@@ -60,35 +61,40 @@
 
                 <div class="contenedor-formulario">
                     <h2>Envianos tu consulta</h2>
-                    <form action="#" method="post" class="formulario-contacto">
+                    <form id="form-contacto" class="formulario-contacto">
                         <div class="campo-form">
                             <label for="id-nombre">Nombre</label>
-                            <input type="text" name="nombre" id="id-nombre" required placeholder="Tu nombre">
+                            <input type="text" name="nombre" id="id-nombre" required minlength="2" maxlength="60"
+                                autocomplete="given-name" placeholder="Tu nombre">
                         </div>
 
                         <div class="campo-form">
                             <label for="id-apellido">Apellido</label>
-                            <input type="text" name="apellido" id="id-apellido" required placeholder="Tu apellido">
+                            <input type="text" name="apellido" id="id-apellido" required minlength="2" maxlength="60"
+                                autocomplete="family-name" placeholder="Tu apellido">
                         </div>
 
                         <div class="campo-form">
                             <label for="id-correo">Email</label>
-                            <input type="email" name="correo" id="id-correo" required placeholder="ejemplo@correo.com">
+                            <input type="email" name="correo" id="id-correo" required autocomplete="email"
+                                placeholder="ejemplo@correo.com">
                         </div>
 
                         <div class="campo-form">
                             <label for="id-telefono">Teléfono (Opcional)</label>
-                            <input type="tel" name="telefono" id="id-telefono" placeholder="351XXXXXXX">
+                            <input type="tel" name="telefono" id="id-telefono" autocomplete="tel" placeholder="351XXXXXXX"
+                                pattern="\+?[0-9 \-]{8,18}" title="Solo números, espacios y guiones (8 a 18 caracteres)">
                         </div>
 
                         <div class="campo-form campo-completo">
                             <label for="id-comentario">Mensaje</label>
-                            <textarea name="comentario" id="id-comentario" rows="5" required placeholder="Escribí tu mensaje aquí..."></textarea>
+                            <textarea name="comentario" id="id-comentario" rows="5" required minlength="10" maxlength="1000"
+                                    placeholder="Escribí tu mensaje aquí..."></textarea>
                         </div>
 
                         <div class="acciones-form campo-completo">
                             <button type="reset" class="boton-secundario">Limpiar</button>
-                            <button type="submit" class="boton-principal">Enviar</button>
+                            <button type="submit" id="boton-enviar-consulta" class="boton-principal">Enviar</button>
                         </div>
                     </form>
                 </div>

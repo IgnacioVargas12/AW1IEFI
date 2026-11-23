@@ -1,5 +1,5 @@
 //  Importaciones
-import { URL_PRODUCTOS } from './config.js';
+import { URL_PRODUCTOS, EMAILJS_TEMPLATE_CONTACTO_ID } from './config.js';
 import { obtenerDatos } from './datos.js';
 import { filtrarPorCategoria, ordenarProductos, obtenerProductoPorId } from './productos.js';
 import { renderizarProductos, renderizarDetalle, renderizarOfertas, renderizarError,
@@ -9,14 +9,16 @@ import { agregarAlCarrito, CANTIDAD_MAXIMA,  actualizarCantidad, quitarDelCarrit
 import { calcularEnvio } from './envio.js';
 import { construirPedido, validarCliente } from './pedido.js';
 import { enviarEmail } from './email.js';
+import { validarConsulta, construirParametrosConsulta } from './contacto.js';
 
-//  Referencias DOM de las tres vistas
+//  Referencias DOM de las vistas
 const contenedorProductos = document.getElementById("contenedor-productos");
 const botonesCategorias = document.querySelectorAll(".boton-categoria");
 const selectOrdenar = document.getElementById("id-ordenar");
 const contenedorDetalle = document.getElementById('contenedor-detalle');
 const contenedorOfertas = document.getElementById('contenedor-ofertas');
 const contenedorCarrito = document.getElementById('lista-carrito');
+const formContacto = document.getElementById('form-contacto');
 
 //  Carga de datos (con manejo de errores)
 let productos = null;
@@ -223,3 +225,44 @@ if (productos) {
     }
 }   
 
+
+// --- Vista de contacto (contacto.html) ---
+// Va fuera de if (productos): el formulario no depende del catálogo,
+// así que tiene que funcionar aunque falle la carga del JSON
+if (formContacto) {
+    const botonEnviarConsulta = document.getElementById("boton-enviar-consulta");
+
+    formContacto.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const consulta = {
+            nombre: formContacto.elements["nombre"].value.trim(),
+            apellido: formContacto.elements["apellido"].value.trim(),
+            correo: formContacto.elements["correo"].value.trim(),
+            telefono: formContacto.elements["telefono"].value.trim(),
+            comentario: formContacto.elements["comentario"].value.trim()
+        };
+
+        const errores = validarConsulta(consulta);
+        if (errores.length > 0) {
+            mostrarNotificacion(errores[0], "error");
+            return;
+        }
+
+        botonEnviarConsulta.disabled = true;
+        botonEnviarConsulta.textContent = "Enviando...";
+
+        try {
+            await enviarEmail(construirParametrosConsulta(consulta), EMAILJS_TEMPLATE_CONTACTO_ID);
+            formContacto.reset();
+            mostrarNotificacion("¡Consulta enviada! Te responderemos a la brevedad.");
+        } catch (error) {
+            console.error("No se pudo enviar la consulta:", error);
+            mostrarNotificacion("No pudimos enviar tu consulta. Intentá de nuevo en unos minutos.", "error");
+        } finally {
+            // Se ejecuta siempre, haya salido bien o mal
+            botonEnviarConsulta.disabled = false;
+            botonEnviarConsulta.textContent = "Enviar";
+        }
+    });
+}

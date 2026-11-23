@@ -1,9 +1,7 @@
 import { calcularPrecioFinal } from './productos.js';
 import { calcularSubtotal } from './carrito.js';
-import { formatearPrecio, urlAbsoluta } from './utilidades.js';
+import { formatearPrecio, urlAbsoluta, REGEX_EMAIL, REGEX_NOMBRE } from './utilidades.js';
 
-const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const REGEX_NOMBRE = /^[\p{L}' ]{3,60}$/u;
 
 // Validación con JS (además de required, type="email" y minlength del HTML)
 export const validarCliente = ({ nombre, email, nota }) => {
